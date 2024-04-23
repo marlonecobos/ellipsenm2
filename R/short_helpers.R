@@ -1,27 +1,3 @@
-#' Helper function to project points
-#' @param data data.frame of occurrence records containing at least longitude and
-#'             latitude columns.
-#' @param longitude (character) name of the column with longitude data.
-#' @param latitude (character) name of the column with latitude data.
-#' @export
-#' @return
-#' A SpatialPointsDataFrame object projected to azimuthal equidistant projection.
-
-wgs_aeqd <- function(data, longitude, latitude) {
-  WGS84 <- sp::CRS("+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0")
-
-  dat_s <- sp::SpatialPointsDataFrame(data[, c(longitude, latitude)], data,
-                                      proj4string = WGS84)
-  centroid <- rgeos::gCentroid(dat_s, byid = FALSE) # to get centroid of area
-  AEQD <- sp::CRS(paste0("+proj=aeqd +lat_0=", centroid@coords[2], " +lon_0=",
-                         centroid@coords[1], " +x_0=0 +y_0=0 +ellps=WGS84",
-                         " +datum=WGS84 +units=m +no_defs"))
-  dat_s <- sp::spTransform(dat_s, AEQD)
-
-  return(dat_s)
-}
-
-
 #' Helper function to find raster extention
 #' @param format (character) any of the format types allowed for raster objects.
 #' See \code{\link[raster]{writeFormats}}
@@ -65,54 +41,6 @@ occ_randsplit <- function(data, train_proportion = 0.5) {
 }
 
 
-#' Helper function to obtain polygon from RasterLayer
-#' @param raster_layer RasterLayer of a region of interest.
-#' @export
-
-raster_poly <- function(raster_layer) {
-  suppressPackageStartupMessages(library(raster))
-  wgs84 <- "+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0"
-
-  if (is.na(raster_layer@crs)) {
-    raster::crs(raster_layer) <- wgs84
-  } else {
-    raster_layer <- raster::projectRaster(raster_layer, crs = wgs84)
-  }
-
-  raster_layer <- raster_layer > min(raster_layer[], na.rm = TRUE)
-  polygons <- raster::rasterToPolygons(raster_layer, dissolve = TRUE)
-
-  return(polygons)
-}
-
-
-#' Helper function to save results from calibration area creation
-#'
-#' @param name (character) name of a folder to be written with the results if
-#' \code{save} = TRUE.
-#' @param area_polygon SpatialPolygonDataFrame to be written in \code{name}.
-#' @param area_type (character) type of polygona (area) to be written.
-#' @param raster_layers optional RasterStack of layers to be written in \code{name}.
-#'
-#' @export
-
-save_areas <- function(name, area_polygon, area_type, raster_layers = NULL) {
-  dir.create(name)
-
-  if (!is.null(raster_layers)) {
-    rgdal::writeOGR(area_polygon, name, area_type,
-                    driver = "ESRI Shapefile")
-    rnames <- paste0(name, "/", names(raster_layers), ".tif")
-    r <- lapply(1:length(rnames), function(x) {
-      raster::writeRaster(raster_layers[[x]], filename = rnames[x],
-                          format = "GTiff")
-    })
-  } else {
-    rgdal::writeOGR(area_polygon, name, area_type,
-                    driver = "ESRI Shapefile")
-  }
-}
-
 
 #' Helper function to calculate niche volume
 #' @param n_dimensions (numeric) number of dimensions to be considered.
@@ -142,7 +70,7 @@ ndata_quantile <- function(n_data, level) {
 }
 
 
-#' Helper funtion to get attributes from ellipsoid lists
+#' Helper function to get attributes from ellipsoid lists
 #' @param ellipsoids list of ellipsoid objects.
 #' @param attribute (character) name of the attribute to be obtained from elements
 #' in \code{ellipsoids}. Options are: method, centroid, covariance_matrix, level,
