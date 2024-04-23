@@ -2,10 +2,10 @@
 % Please edit documentation in R/data_subsample.R
 \name{data_subsample}
 \alias{data_subsample}
-\title{Helper function to subsample occurrence data}
+\title{Helper function to sub-sample occurrence data}
 \usage{
-data_subsample(data, replicates = 1, replicate_type = "bootstrap",
-               bootstrap_percentage = 50)
+data_subsample(data, replicates = 1, replicate_type = "subsample",
+               percentage = 50)
 }
 \arguments{
 \item{data}{data.frame of occurrence records. Columns must be longitude and
@@ -17,14 +17,14 @@ equal the number of records in \code{data}. Default = 1 returns the complete
 set of data as the only element of a list.}
 
 \item{replicate_type}{(character) name of the sampling method to be used.
-Options are "bootstrap" or "jackknife". Default = "bootstrap".}
+Options are "bootstrap", "jackknife", or "subsample". Default = "subsample".}
 
-\item{bootstrap_percentage}{(numeric) percentage of data to be bootstrapped
+\item{percentage}{(numeric) percentage of data to be bootstrapped
 for each replicate. Default = 50. Valid if \code{replicates} > 1 and
 \code{replicate_type} = "bootstrap".}
 }
 \description{
-Helper function to subsample occurrence data
+Helper function to sub-sample occurrence data
 }
 \examples{
 # reading data
@@ -33,7 +33,7 @@ occurrences <- read.csv(system.file("extdata", "occurrences.csv",
 
 # subsampling by bootstrap
 subsamples <- data_subsample(data = occurrences[, -1], replicates = 5,
-                             replicate_type = "bootstrap", bootstrap_percentage = 70)
+                             replicate_type = "bootstrap", percentage = 70)
 
 lapply(subsamples, head)
 lapply(subsamples, dim)

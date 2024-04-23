@@ -1,6 +1,6 @@
 # R classes for ellipsenm objects
-# May 2019
-# Version 0.3.2
+# April 2024
+# Version 0.3.5
 # Licence GPL v3
 
 #' An S4 class to organize data and results of ellipsoid* objects

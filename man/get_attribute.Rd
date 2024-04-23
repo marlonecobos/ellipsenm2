@@ -2,7 +2,7 @@
 % Please edit documentation in R/short_helpers.R
 \name{get_attribute}
 \alias{get_attribute}
-\title{Helper funtion to get attributes from ellipsoid lists}
+\title{Helper function to get attributes from ellipsoid lists}
 \usage{
 get_attribute(ellipsoids, attribute = "method")
 }
@@ -17,5 +17,5 @@ niche_volume, semi_axes_length, and axes_coordinates. Default = "method".}
 The attribute selected.
 }
 \description{
-Helper funtion to get attributes from ellipsoid lists
+Helper function to get attributes from ellipsoid lists
 }
