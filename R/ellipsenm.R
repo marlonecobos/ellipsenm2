@@ -13,7 +13,7 @@
 #' \code{\link{ellipsoid_model}}, \code{\link{overlap_object}},
 #' \code{\link{ellipsoid_overlap}}, \code{\link{plot_overlap}}
 #'
-#' @section Other functions (important helpers)
+#' @section Other functions (important helpers):
 #' \code{\link{data_subsample}}, \code{\link{ellipsoid_volume}},
 #' \code{\link{report_format}}, \code{\link{mbased_mve}},
 #' \code{\link{mmm_ellipsoid}}, \code{\link{model_projection}},
