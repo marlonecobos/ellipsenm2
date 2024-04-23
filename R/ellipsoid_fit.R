@@ -1,7 +1,7 @@
 #' Fit ellipsoids based on distinct methods
 #'
 #' @description ellipsoid_fit helps in finding the centroid and matrix that
-#' define an ellipsoid. It uses distinct methods with asumptions that differ
+#' define an ellipsoid. It uses distinct methods with assumptions that differ
 #' from each other.
 #'
 #' @param data data.frame or matrix of occurrence records. Columns must be
@@ -13,11 +13,11 @@
 #' the species ecological niche. Available methods are: "covmat", "mve1", and
 #' "mve2". See details. Default = "covmat".
 #' @param level (numeric) the confidence level of a pairwise confidence region
-#' for the ellipsoid, expresed as percentage. Default = 95. See details.
-#' @param raster_layers optional RasterStack of environmental variables to be
+#' for the ellipsoid, expressed as percentage. Default = 95. See details.
+#' @param raster_layers optional SpatRaster of environmental variables to be
 #' extracted using geographic coordinates present in \code{data}. If not defined
 #' \code{data} must include at least two other columns with values of the
-#' variables (dimesnions) used to fit the ellipsoid.
+#' variables (dimensions) used to fit the ellipsoid.
 #'
 #' @return
 #' An object of class \code{\link{ellipsoid}}.
@@ -50,7 +50,7 @@
 #' matrix if compared to the "covmat" method. In general ellipsoids created with
 #' this method have smaller volumes than the ones created with previous methods.
 #'
-#' Argument \code{level} defines the limit of the elipsoid as the percentage of
+#' Argument \code{level} defines the limit of the ellipsoid as the percentage of
 #' data to be included inside it. In the context of ecological niche modeling,
 #' this argument represents the percentage of error that the data may contain
 #' owing to the diverse types of biases derived from sampling, georeferencing,
@@ -65,8 +65,8 @@
 #'                                     package = "ellipsenm"))
 #'
 #' # raster layers of environmental data
-#' vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
-#'                                  pattern = "bio", full.names = TRUE))
+#' vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
+#'                                pattern = "bio", full.names = TRUE))
 #'
 #' # fitting an ellipsoid using normal covariance matrix
 #' ellips <- ellipsoid_fit(data = occurrences, longitude = "longitude",
@@ -77,10 +77,11 @@
 #' str(ellips)
 #'
 #' # using only a matrix of data and no raster layers, also another method
-#' occurrences1 <- cbind(occurrences[, 2:3], raster::extract(vars, occurrences[, 2:3]))
+#' occurrences1 <- cbind(occurrences[, 2:3],
+#'                       terra::extract(vars, occurrences[, 2:3])[, -1])
 #'
-#' ellips1 <- ellipsoid_fit(occurrences1, longitude = "longitude", latitude = "latitude",
-#'                          method = "mve1", level = 99)
+#' ellips1 <- ellipsoid_fit(occurrences1, longitude = "longitude",
+#'                          latitude = "latitude", method = "mve1", level = 99)
 
 ellipsoid_fit <- function (data, longitude, latitude, method = "covmat",
                            level = 95, raster_layers = NULL) {
@@ -100,7 +101,8 @@ ellipsoid_fit <- function (data, longitude, latitude, method = "covmat",
   # -----------
   # preparing data
   if (!is.null(raster_layers)) {
-    data <- na.omit(raster::extract(raster_layers, data[, c(longitude, latitude)]))
+    data <- na.omit(terra::extract(raster_layers,
+                                   data[, c(longitude, latitude)]))[, -1]
   } else {
     data <- data[, -which(colnames(data) %in% c(longitude, latitude))]
   }
