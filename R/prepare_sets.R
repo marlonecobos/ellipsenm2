@@ -1,8 +1,8 @@
 #' Prepare sets of variables for calibration
 #'
-#' @param variables (character or RasterStack) if character, name of the folder
-#' containing only the variables to be subsetted; if RasterStack, stack of
-#' variables to be subsetted.
+#' @param variables (character or SpatRaster) if character, name of the folder
+#' containing only the variables to be divided into sets; if SpatRaster, stack of
+#' variables to be divided into sets.
 #' @param sets named list of character vectors with the names of the variables
 #'  per each subset. Default = NULL.
 #' @param all_combinations (logical) whether or not to prepare sets based on all
@@ -13,31 +13,30 @@
 #' be > 1. Default = 2.
 #' @param format_in (character) if \code{variables} is character, format of the
 #' variables found in the folder. Default = NULL.
-#' @param save (logical) wheter or not to write sets of variables in a subfolder
+#' @param save (logical) whether or not to write sets of variables in a subfolder
 #' in the working directory. Default = FALSE.
 #' @param format_out (character) format of the variables to be written in
 #' \code{output_directory} if \code{save} = TRUE. Default = "GTiff".
-#' @param overwrite (logical) whether or not to overwrite exitent results in
+#' @param overwrite (logical) whether or not to overwrite existent results in
 #' \code{output_directory} if \code{save} = TRUE. Default = FALSE.
 #' @param output_directory name of the folder were subsets will be written if
-#' \code{save} = TRUE. Default = "Variable_sets".
+#' \code{save} = TRUE.
 #'
 #' @export
 #'
 #' @return
 #' A list of character vectors containing the names of the variables to be used
-#' in each set. A folder with subfolders (sets) and variables subsetted.
+#' in each set. A folder with subfolders (sets) and variables divided into sets.
 #'
 #' @usage
 #' prepare_sets(variables, sets = NULL, all_combinations = FALSE,
 #'              minvar_perset = 2, format_in = NULL, save = FALSE,
-#'              format_out = "GTiff", overwrite = FALSE,
-#'              output_directory = "Variable_sets")
+#'              format_out = "GTiff", overwrite = FALSE, output_directory)
 
 prepare_sets <- function(variables, sets = NULL, all_combinations = FALSE,
                          minvar_perset = 2, format_in = NULL, save = FALSE,
                          format_out = "GTiff", overwrite = FALSE,
-                         output_directory = "Variable_sets") {
+                         output_directory) {
   # -----------
   # detecting potential errors
   if (missing(variables)) {
@@ -47,7 +46,7 @@ prepare_sets <- function(variables, sets = NULL, all_combinations = FALSE,
     stop("Argument 'sets' must be provided if all_cambinations = FALSE. See function's help.")
   }
   clvar <- class(variables)[1]
-  if (clvar == "character" | clvar == "RasterStack") {
+  if (clvar == "character" | clvar == "SpatRaster") {
     if (clvar == "character") {
       if (is.null(format_in)) {
         stop("Argument 'fomat_in' cannot be NULL if variables is of class character.")
@@ -56,16 +55,16 @@ prepare_sets <- function(variables, sets = NULL, all_combinations = FALSE,
       rtype <- rformat_type(format_in)
       var_dir <- variables
       vars <- list.files(variables, pattern = patt, full.names = TRUE)
-      variables <- raster::stack(vars)
+      variables <- terra::rast(vars)
     }
     var_names <- names(variables)
   } else {
-    stop("'variables' must be either character or RasterStack. See function's help.")
+    stop("'variables' must be either character or SpatRaster. See function's help.")
   }
 
   # -----------
   # Preparing sets
-  cat("\nPreparing sets of variables...\n")
+  message("Preparing sets of variables...")
   if (!missing(sets)) {
     if (!missing(sets) & all_combinations == TRUE) {
       message("Argument 'sets' was provided, all_cambinations = TRUE will be ignored.")
@@ -81,12 +80,16 @@ prepare_sets <- function(variables, sets = NULL, all_combinations = FALSE,
     names(sets) <- paste0("set_", 1:length(sets))
   }
 
-  cat(paste0("\t", length(sets)), "sets of variables prepared\n")
+  message(paste0("\t", length(sets)), " sets of variables prepared")
 
   # -----------
   # writing sets in output directory
   if (save == TRUE) {
-    cat("\nWriting sets of variables in output directory:\n")
+    if (missing(output_directory)) {
+      stop("'output_directory' must be defined if 'save' = TRUE.")
+    }
+
+    message("Writing sets of variables in output directory:")
     dir.create(output_directory)
     sub_paths <- paste0(output_directory, "/", names(sets))
 
@@ -103,19 +106,19 @@ prepare_sets <- function(variables, sets = NULL, all_combinations = FALSE,
         } else {
           lapply(1:length(vars_set), function(y) {
             var_name <- sets[[x]][y]
-            raster::writeRaster(variables[[var_name]], filename = vars_set[y],
-                                format = format_out, overwrite = overwrite)
+            terra::writeRaster(variables[[var_name]], filename = vars_set[y],
+                               overwrite = overwrite)
           })
         }
       } else {
         lapply(1:length(vars_set), function(y) {
           var_name <- sets[[x]][y]
-          raster::writeRaster(variables[[var_name]], filename = vars_set[y],
-                              format = format_out, overwrite = overwrite)
+          terra::writeRaster(variables[[var_name]], filename = vars_set[y],
+                             overwrite = overwrite)
         })
       }
 
-      cat("\tset", x, "of", length(sub_paths), "created\n")
+      message("\tset ", x, " of ", length(sub_paths), " created")
     })
   }
 

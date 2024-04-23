@@ -94,8 +94,8 @@ colnames(occurrences)
 
 # raster layers of environmental data (this ones are masked to the accessible area)
 # users must prepare their layers accordingly if using other data
-vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
-                                 pattern = "bio", full.names = TRUE))
+vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
+                               pattern = "bio", full.names = TRUE))
 
 # preparing training and testing data
 data_split <- split_data(occurrences, method = "random", longitude = "longitude",

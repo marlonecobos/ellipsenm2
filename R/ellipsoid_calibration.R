@@ -77,8 +77,8 @@
 #'
 #' # raster layers of environmental data (this ones are masked to the accessible area)
 #' # users must prepare their layers accordingly if using other data
-#' vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
-#'                                  pattern = "bio", full.names = TRUE))
+#' vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
+#'                                pattern = "bio", full.names = TRUE))
 #'
 #' # preparing training and testing data
 #' data_split <- split_data(occurrences, method = "random", longitude = "longitude",
@@ -146,15 +146,17 @@ ellipsoid_calibration <- function(data, species, longitude, latitude, variables,
 
   # -----------
   # preparing data and variables
-  cat("\nPreparing data...\n")
+  message("Preparing data...")
   ## occurrences
+  xycol <- c(longitude, latitude)
+
   clocc <- class(data)[1]
   if (clocc == "character" | clocc == "list") {
     if (clocc == "character") {
       data <- lapply(data, function(x) {read.csv(x)})
     }
     sp <- as.character(data[[1]][1, species])
-    data <- lapply(data, function(x) {x[, c(species, longitude, latitude)]})
+    data <- lapply(data, function(x) {x[, c(species, xycol)]})
 
   } else {
     stop("data must be either character or list. See function's help.")
@@ -175,7 +177,7 @@ ellipsoid_calibration <- function(data, species, longitude, latitude, variables,
     })
     names(sets) <- paste0("set_", 1:length(sets))
 
-    variables <- list(raster_layers = raster::stack(vars[places]),
+    variables <- list(raster_layers = terra::rast(vars[places]),
                       variable_sets = sets)
   }
 
@@ -183,100 +185,58 @@ ellipsoid_calibration <- function(data, species, longitude, latitude, variables,
   # calibration process
   dir.create(output_directory)
 
-  cat("\nRunning model calibration:\n")
+  message("Running model calibration:")
   settings <- length(methods) * length(variables[[2]])
+
+  if (parallel == TRUE) {
+    message("Parallel option is still in development, sequential will be used.")
+    parallel <- FALSE
+  }
+
   if (parallel == FALSE) {
     calibration <- sapply(1:length(variables[[2]]), function(x) {
       varss <- variables[[1]][[variables[[2]][[x]]]]
-      var_vals <- na.omit(raster::values(varss))
+      var_vals <- terra::as.data.frame(varss)
 
       resul <- lapply(1:length(methods), function(y) {
         ## pROC
-        xy_train <- data[[2]][, c(longitude, latitude)]
-        train_data <- data.frame(xy_train, na.omit(raster::extract(varss, xy_train)))
-        occ_vals <- na.omit(raster::extract(varss, data[[3]][, c(longitude, latitude)]))
+        xy_train <- as.matrix(data[[2]][, xycol])
+        train_data <- na.omit(data.frame(xy_train,
+                                         terra::extract(varss, xy_train)))
+        occ_vals <- na.omit(terra::extract(varss,
+                                           as.matrix(data[[3]][, xycol])))
 
-        ellip <- ellipsoid_fit(train_data, longitude, latitude, methods[y], level)
+        ellip <- ellipsoid_fit(train_data, longitude, latitude, methods[y],
+                               level)
 
-        pred <- predict(ellip, projection_variables = var_vals, truncate = FALSE)
+        pred <- predict(ellip, projection_variables = var_vals,
+                        truncate = FALSE)
         pred_occ <- predict(ellip, projection_variables = occ_vals)
 
-        proc <- partial_roc(pred@suitability, pred_occ@suitability, longitude,
-                            latitude, error, iterations, percentage)
+        proc <- enmpa::proc_enm(pred_occ@suitability, pred@suitability,
+                                threshold = error, percentage, iterations)
 
         ## Omission rate
         om_rate <- sum(pred_occ@suitability == 0) / length(pred_occ@suitability)
 
         ## Prevalence
-        xy_all <- data[[1]][, c(longitude, latitude)]
-        all_data <- data.frame(xy_all, na.omit(raster::extract(varss, xy_all)))
+        xy_all <- as.matrix(data[[1]][, xycol])
+        all_data <- data.frame(xy_all, na.omit(terra::extract(varss, xy_all)))
 
         ellip <- ellipsoid_fit(all_data, longitude, latitude, methods[y], level)
 
-        pred <- predict(ellip, projection_variables = var_vals, truncate = FALSE)
+        pred <- predict(ellip, projection_variables = var_vals,
+                        truncate = FALSE)
 
-        #par <- paste0("Method_", methods[y], "_", names(variables[[2]])[x])
         par <- data.frame(Method = methods[y],
                           Variable_set = names(variables[[2]])[x])
         res <- c(proc[[1]], Omission_rate = om_rate, pred@prevalence[1],
                  pred@prevalence[2])
-        nams <- names(res)
-        res <- matrix(res, nrow = 1)
-        colnames(res) <- nams
-        res <- cbind.data.frame(par, res)
+        res <- cbind(par, t(res))
 
         ## Counting
         num <- ifelse(x == 1, 0, (length(methods) * (x - 1))) + y
-        cat("\tParameter setting", num, "of", settings, "\n")
-        return(res)
-      })
-
-      return(resul)
-    })
-  } else {
-    cat("\nParallel option is still in development, sequential process will be used.\n")
-    calibration <- sapply(1:length(variables[[2]]), function(x) {
-      varss <- variables[[1]][[variables[[2]][[x]]]]
-      var_vals <- na.omit(raster::values(varss))
-
-      resul <- lapply(1:length(methods), function(y) {
-        ## pROC
-        xy_train <- data[[2]][, c(longitude, latitude)]
-        train_data <- data.frame(xy_train, na.omit(raster::extract(varss, xy_train)))
-        occ_vals <- na.omit(raster::extract(varss, data[[3]][, c(longitude, latitude)]))
-
-        ellip <- ellipsoid_fit(train_data, longitude, latitude, methods[y], level)
-
-        pred <- predict(ellip, projection_variables = var_vals, truncate = FALSE)
-        pred_occ <- predict(ellip, projection_variables = occ_vals)
-
-        proc <- partial_roc(pred@suitability, pred_occ@suitability, longitude,
-                            latitude, error, iterations, percentage)
-
-        ## Omission rate
-        om_rate <- sum(pred_occ@suitability == 0) / length(pred_occ@suitability)
-
-        ## Prevalence
-        xy_all <- data[[1]][, c(longitude, latitude)]
-        all_data <- data.frame(xy_all, na.omit(raster::extract(varss, xy_all)))
-
-        ellip <- ellipsoid_fit(all_data, longitude, latitude, methods[y], level)
-
-        pred <- predict(ellip, projection_variables = var_vals, truncate = FALSE)
-
-        #par <- paste0("Method_", methods[y], "_", names(variables[[2]])[x])
-        par <- data.frame(Method = methods[y],
-                          Variable_set = names(variables[[2]])[x])
-        res <- c(proc[[1]], Omission_rate = om_rate, pred@prevalence[1],
-                 pred@prevalence[2])
-        nams <- names(res)
-        res <- matrix(res, nrow = 1)
-        colnames(res) <- nams
-        res <- cbind.data.frame(par, res)
-
-        ## Counting
-        num <- ifelse(x == 1, 0, (length(methods) * (x - 1))) + y
-        cat("\tParameter setting", num, "of", length(settings), "\n")
+        message("\tParameter setting ", num, " of ", settings)
         return(res)
       })
 
@@ -291,7 +251,7 @@ ellipsoid_calibration <- function(data, species, longitude, latitude, variables,
 
   # -----------
   # parameter selection
-  cat("\nSelecting best parameter settings:\n")
+  message("Selecting best parameter settings:")
   selected <- select_best(calibration, selection_criteria, level, error)
 
   write.csv(selected, paste0(output_directory, "/selected_parameterizations.csv"),

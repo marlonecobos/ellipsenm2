@@ -6,13 +6,12 @@
 \usage{
 prepare_sets(variables, sets = NULL, all_combinations = FALSE,
              minvar_perset = 2, format_in = NULL, save = FALSE,
-             format_out = "GTiff", overwrite = FALSE,
-             output_directory = "Variable_sets")
+             format_out = "GTiff", overwrite = FALSE, output_directory)
 }
 \arguments{
-\item{variables}{(character or RasterStack) if character, name of the folder
-containing only the variables to be subsetted; if RasterStack, stack of
-variables to be subsetted.}
+\item{variables}{(character or SpatRaster) if character, name of the folder
+containing only the variables to be divided into sets; if SpatRaster, stack of
+variables to be divided into sets.}
 
 \item{sets}{named list of character vectors with the names of the variables
 per each subset. Default = NULL.}
@@ -28,21 +27,21 @@ be > 1. Default = 2.}
 \item{format_in}{(character) if \code{variables} is character, format of the
 variables found in the folder. Default = NULL.}
 
-\item{save}{(logical) wheter or not to write sets of variables in a subfolder
+\item{save}{(logical) whether or not to write sets of variables in a subfolder
 in the working directory. Default = FALSE.}
 
 \item{format_out}{(character) format of the variables to be written in
 \code{output_directory} if \code{save} = TRUE. Default = "GTiff".}
 
-\item{overwrite}{(logical) whether or not to overwrite exitent results in
+\item{overwrite}{(logical) whether or not to overwrite existent results in
 \code{output_directory} if \code{save} = TRUE. Default = FALSE.}
 
 \item{output_directory}{name of the folder were subsets will be written if
-\code{save} = TRUE. Default = "Variable_sets".}
+\code{save} = TRUE.}
 }
 \value{
 A list of character vectors containing the names of the variables to be used
-in each set. A folder with subfolders (sets) and variables subsetted.
+in each set. A folder with subfolders (sets) and variables divided into sets.
 }
 \description{
 Prepare sets of variables for calibration

@@ -235,9 +235,9 @@ write_ellmeta <- function(ellipsoid, name = "ellipsoid_metadata") {
 #' @param selection_criteria (character) set of criteria to select best models,
 #' options are: "S_OR" (statistical significance and low omission) and
 #' "S_OR_P" (statistical significance, low omission, and low prevalence).
-#' See details. Default = "Sig_OR_Prev".
+#' See details. Default = "S_OR_P".
 #' @param level (numeric) the confidence level of a pairwise confidence region
-#' for the ellipsoid, expresed as percentage. Default = 95.
+#' for the ellipsoid, expressed as percentage. Default = 95.
 #' @param error (numeric) value from 0 to 100 to represent the percentage of
 #' potential error (E) that the data could have due to any source of uncertainty.
 #' Default = 5.
@@ -264,12 +264,12 @@ select_best <- function(calibration_table, selection_criteria = "S_OR_P",
       warning("None of the models had omission rates lower or equal than expected.\n  The ones with the lowest omission rates were selected.\n")
     }
     if (selection_criteria == "S_OR_P") {
-      res <- res[res[, 8] == min(res[, 8]), ]
+      res <- res[res[, 7] == min(res[, 7]), ]
     }
   } else {
     stop("Argument 'selection_criteria' is not valid, see function's help.")
   }
-  cat("\tA total of", nrow(res), "paramter settings were selected.\n")
+  message("\tA total of ", nrow(res), " paramter settings were selected\n")
   return(res)
 }
 
