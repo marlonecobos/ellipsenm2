@@ -28,29 +28,17 @@ Description: A collection of tools to characterize ecological niches using
 URL: https://github.com/marlonecobos/ellipsenm
 BugReports: https://github.com/marlonecobos/ellipsenm/issues
 Imports:
-    concaveman (>= 1.0),
-    corrplot (>= 0.8),
-    cowplot (>= 1.0),
-    curl (>= 4.0),
     data.table (>= 1.12),
-    dplyr (>= 0.8),
     ellipse (>= 0.4),
     formatR (>= 1.7),
-    GGally (>= 1.4),
-    ggplot2 (>= 3.2),
     knitr (>= 1.23),
     maps (>= 3.3),
     MASS (>= 7.3),
-    purrr (>= 0.3),
     raster (>= 2.6),
-    Rcpp (>= 1.0),
-    rgdal (>= 1.4),
-    rgeos (>= 0.3),
     rgl (>= 0.100),
     rmarkdown (>= 1.13),
     rmdformats (>= 0.3),
     scales (>= 1.0),
-    sf (>= 0.7),
     sp (>= 1.2),
     viridis (>= 0.5)
 Depends:
@@ -60,5 +48,5 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.3.1
 LinkingTo: Rcpp
