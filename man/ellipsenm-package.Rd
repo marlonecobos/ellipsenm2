@@ -35,8 +35,8 @@ are useful to perform a series of pre- and post-modeling analyses.
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/marlonecobos/ellipsenm}
-  \item Report bugs at \url{https://github.com/marlonecobos/ellipsenm/issues}
+  \item \url{https://github.com/marlonecobos/ellipsenm2}
+  \item Report bugs at \url{https://github.com/marlonecobos/ellipsenm2/issues}
 }
 
 }
