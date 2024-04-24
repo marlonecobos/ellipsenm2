@@ -5,7 +5,7 @@
 \title{Overlap analyses for random sampled data}
 \usage{
 overlap_random(background, sample_size, method, level, overlap_type = "all",
-               replicates = 1000)
+               iterations = 1000)
 }
 \arguments{
 \item{background}{list containing the backgrounds to be used. If \code{overlap_type}
@@ -19,12 +19,12 @@ analyses that should be sampled in each replicate.}
 characterize the species ecological niches.}
 
 \item{level}{(numeric) vector of the confidence levels of a pairwise
-confidence region for the ellipsoids, expresed as percentage.}
+confidence region for the ellipsoids, expressed as percentage.}
 
 \item{overlap_type}{(character) type of overlap to be measured. Options are:
 "all", "full", and "back_union". Default = "all". See details.}
 
-\item{replicates}{(numeric) number of replicates to be performed during the
+\item{iterations}{(numeric) number of iterations to be performed during the
 significance test; default = 1000.}
 }
 \value{

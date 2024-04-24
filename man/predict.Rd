@@ -20,7 +20,7 @@ predict(object, projection_variables, prediction = "suitability",
 \arguments{
 \item{object}{a fitted object of class ellipsoid*.}
 
-\item{projection_variables}{RasterStack or matrix of variables representing
+\item{projection_variables}{SpatRaster or matrix of variables representing
 environmental conditions of the scenario to which \code{object} will be
 projected. See details.}
 
@@ -33,7 +33,7 @@ Default = TRUE.}
 
 \item{return_numeric}{(logical) whether or not to return values of mahalanobis
 distance and suitability as part of the results (it depends on the type of
-\code{prediction} selected). If \code{projection_variables} is a RasterStack,
+\code{prediction} selected). If \code{projection_variables} is a SpatRaster,
 default = FALSE, but can be changed to TRUE; if \code{projection_variables} is
 a matrix, default = TRUE and cannot be changed. See details.}
 
@@ -72,12 +72,12 @@ ellipsoid* objects.
 Argument \code{object} must be of one of the following classes: "ellipsoid"
 or "ellipsoid_model_sim". The prefix "suitability" or "mahalanobis" will be
 added to \code{name} depending on the type of prediction defined in
-\code{prediction}. File type (extention) will be added to \code{name}, if
+\code{prediction}. File type (extension) will be added to \code{name}, if
 defined, .csv for numeric results and any of the ones described in
 \code{\link[raster]{writeFormats}} depending on \code{format}.
 
 Argument \code{projection_variables} variables can be defined either as a
-RasterStack or as a matrix. If a matrix is given each column represents a
+SpatRaster or as a matrix. If a matrix is given each column represents a
 variable and predictions are returned only as numeric vectors. In both cases,
 variable names must match exactly the order and name of variables used to
 create \code{object}.
@@ -88,7 +88,7 @@ is defined this indicates the ellipsoid for which the numeric result will
 return, if not defined, the results for the first ellipsoid will return.
 
 The only scenarios in which none of the numeric results will be returned are:
-if \code{projection_variables} is a RasterStack and \code{return numeric} is
+if \code{projection_variables} is a SpatRaster and \code{return numeric} is
 set as FALSE, and if \code{name} is defined and \code{force_return} is set as
 FALSE, even if \code{return numeric} = TRUE for ellipsoid_model_sim. However,
 for the latter case, if \code{force_return} is set as TRUE, raster and numeric
@@ -100,7 +100,7 @@ occurrences <- read.csv(system.file("extdata", "occurrences.csv",
                                     package = "ellipsenm"))
 
 # raster layers of environmental data
-vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
+vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
                                  pattern = "bio", full.names = TRUE))
 
 
@@ -124,7 +124,7 @@ prediction1 <- predict(object = ellips1, projection_variables = vars,
 # example with replicated ellipsoid
 # getting values of variables in data
 occurrences1 <- cbind(occurrences[, 2:3],
-                      raster::extract(vars, occurrences[, 2:3]))
+                      terra::extract(vars, occurrences[, 2:3])[, -1])
 
 # subsampling data for construction of multiple ellipsoids
 subsamples <- data_subsample(data = occurrences1, replicates = 10,

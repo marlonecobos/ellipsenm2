@@ -12,7 +12,7 @@
 #' @param ylab (character) label of y axis, default = "Frequency".
 #' @param breaks type of breaks as in \code{\link[graphics]{hist}}, default = 30.
 #' @param bar_col color of histogram bars, default = "gray65".
-#' @param cl_col color of confidence limit line, default = "darkgreen".
+#' @param cl_col color of confidence limit line, default = "black".
 #' @param observed_col color of line representing observed value of overlap,
 #' default = "blue".
 #' @param cl_lty type of line for confidence limit, default = 2.
@@ -28,7 +28,7 @@
 #' plot_overlap_sig(object, niches = c(1, 2), main = "",
 #'                  xlab = "Overlap", ylab = "Frequency",
 #'                  breaks = 30, bar_col = "gray65",
-#'                  cl_col = "darkgreen", observed_col = "blue",
+#'                  cl_col = "black", observed_col = "blue",
 #'                  cl_lty = 2, observed_lty = 1, cl_lwd = 2,
 #'                  observed_lwd = 2, xlim = NULL)
 #'
@@ -37,7 +37,7 @@
 plot_overlap_sig <- function(object, niches = c(1, 2), main = "",
                              xlab = "Overlap", ylab = "Frequency",
                              breaks = 30, bar_col = "gray65",
-                             cl_col = "darkgreen", observed_col = "blue",
+                             cl_col = "black", observed_col = "blue",
                              cl_lty = 2, observed_lty = 1, cl_lwd = 2,
                              observed_lwd = 2, xlim = NULL) {
 

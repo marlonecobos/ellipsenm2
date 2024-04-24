@@ -35,7 +35,7 @@
 #' @param parallel (logical) whether or not to run analyses in parallel. If
 #' defined as TRUE, it will only run in parallel if the number of parameter
 #' settings to be tested is equal or larger than the number of cores available.
-#' @param overwrite (logical) whether or not to overwrite exitent results in
+#' @param overwrite (logical) whether or not to overwrite existing results in
 #' \code{output_directory}. Default = FALSE.
 #' @param output_directory (character) name of the folder were results of model
 #' calibration and selection will be written.
@@ -52,7 +52,7 @@
 #'                       selection_criteria = "S_OR_P", error = 5,
 #'                       iterations = 500, percentage = 50,
 #'                       parallel = FALSE, overwrite = FALSE,
-#'                       output_directory = "calibration_results")
+#'                       output_directory)
 #'
 #' @export
 #'
@@ -99,14 +99,14 @@
 #'                                variables = variable_sets, methods = methods,
 #'                                level = 99, selection_criteria = "S_OR_P",
 #'                                error = 5, iterations = 500, percentage = 50,
-#'                                output_directory = "calibration_results")
+#'                                output_directory = file.path(tempdir(), "calres"))
 
 ellipsoid_calibration <- function(data, species, longitude, latitude, variables,
                                   format_in = NULL, methods, level = 95,
                                   selection_criteria = "S_OR_P",
                                   error = 5, iterations = 500, percentage = 50,
                                   parallel = FALSE, overwrite = FALSE,
-                                  output_directory = "calibration_results") {
+                                  output_directory) {
   # -----------
   # detecting potential errors, other potential problems tested in code
   if (missing(data)) {
@@ -126,6 +126,9 @@ ellipsoid_calibration <- function(data, species, longitude, latitude, variables,
   }
   if (missing(methods)) {
     stop("Argument methods is necessary to perform the analysis.")
+  }
+  if (missing(output_directory)) {
+    stop("Argument 'output_directory' needs to be defined.")
   }
   if (overwrite == FALSE & dir.exists(output_directory)) {
     stop("output_directory already exists, to replace it use overwrite = TRUE.")

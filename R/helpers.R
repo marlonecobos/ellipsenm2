@@ -284,7 +284,7 @@ select_best <- function(calibration_table, selection_criteria = "S_OR_P",
 #' "mve2". See details. Default = "covmat".
 #' @param level (numeric) the confidence level of a pairwise confidence region
 #' for the ellipsoid, expresed as percentage. Default = 95.
-#' @param variables (optional) RasterStack, matrix, or data.frame of at least two
+#' @param variables (optional) SpatRaster, matrix, or data.frame of at least two
 #' variables to represent a set of conditions relevant for overlap analyses.
 #' @export
 #' @return
@@ -300,7 +300,7 @@ overlap_object <- function(data, species, longitude, latitude, method = "covmat"
     stop("Argument 'data' is needed for creating data_overlap object.")
   }
   if (!is.null(variables)) {
-    if (!class(variables)[1] %in% c("RasterStack", "matrix", "data.frame")) {
+    if (!class(variables)[1] %in% c("SpatRaster", "matrix", "data.frame")) {
       stop("Argument 'variables' is not valid, see function's help.")
     }
   } else {

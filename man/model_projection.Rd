@@ -8,21 +8,21 @@ model_projection(ellipsoid, projection_variables, prvariables_format = NULL,
                  sp_name, prediction = "suitability", truncate = TRUE,
                  return_numeric = TRUE, tolerance = 1e-60, format = "GTiff",
                  overwrite = FALSE, force_return = FALSE, return_name = NULL,
-                 output_directory = "ellipsenm_projections")
+                 output_directory)
 }
 \arguments{
 \item{ellipsoid}{a fitted object of class ellipsoid*.}
 
-\item{projection_variables}{(RasterStack, list, or character): if RasterStack,
-a stack of layers respresenting an only scenario for projection; if list, a
-named list of RasterStacks representing multiple scenarios for projection; if
+\item{projection_variables}{(SpatRaster, list, or character): if SpatRaster,
+a stack of layers representing an only scenario for projection; if list, a
+named list of SpatRasters representing multiple scenarios for projection; if
 character, name of the folder (in the working directory) containing other
 folders (scenarios for projection) with raster layers to be used as variables.
 See details of \code{\link{ellipsoid_model}}.}
 
 \item{prvariables_format}{(character) if \code{projection_variables} is a list,
 raster type of variables (raster layers) to be used and located in
-subdirectories. Default = NULL. See \code{\link[raster]{writeFormats}} for
+sub-directories. Default = NULL. See \code{\link[raster]{writeFormats}} for
 details and options.}
 
 \item{sp_name}{(character) name of the species for which model(s) will be
@@ -35,19 +35,19 @@ projected. If not defined "species" is used.}
 based on ellipsoid limits. All values outside the ellipsoid will be zero.
 Default = TRUE.}
 
-\item{return_numeric}{(logical) whether or not to return values of mahalanobis
+\item{return_numeric}{(logical) whether or not to return values of Mahalanobis
 distance and suitability as part of the results (it depends on the type of
-\code{prediction} selected). If \code{projection_variables} is a RasterStack,
+\code{prediction} selected). If \code{projection_variables} is a SpatRaster,
 default = FALSE; if \code{projection_variables} is a matrix, default = TRUE.
 For both options the default can be changed. See details.}
 
 \item{tolerance}{the tolerance for detecting linear dependencies.
 Default = 1e-60.}
 
-\item{format}{(charater) raster type of layers to be written.
+\item{format}{(character) raster type of layers to be written.
 See \code{\link[raster]{writeFormats}} for details and options.}
 
-\item{overwrite}{(logical) whether or not to overwrite an exitent file with
+\item{overwrite}{(logical) whether or not to overwrite an exiting file with
 the exact same name. Default = FALSE.}
 
 \item{force_return}{(logical) whether or not to force returning numeric and
@@ -62,9 +62,9 @@ This avoids saturation of the RAM.}
 }
 \value{
 A list with an example of each of the following: raster layers of suitability
-or mahalanobis distances, depending on the type of \code{prediction} selected;
-and the prevalence in environemnetal and geographic space for all projection
-scenarios, if \code{prediction} was other than mahalanobis.
+or Mahalanobis distances, depending on the type of \code{prediction} selected;
+and the prevalence in environmental and geographic space for all projection
+scenarios, if \code{prediction} was other than "mahalanobis".
 
 Additionally all results of projections will be written in the folder defined
 in \code{output_directory}.

@@ -7,7 +7,7 @@
 plot_overlap_sig(object, niches = c(1, 2), main = "",
                  xlab = "Overlap", ylab = "Frequency",
                  breaks = 30, bar_col = "gray65",
-                 cl_col = "darkgreen", observed_col = "blue",
+                 cl_col = "black", observed_col = "blue",
                  cl_lty = 2, observed_lty = 1, cl_lwd = 2,
                  observed_lwd = 2, xlim = NULL)
 }
@@ -28,7 +28,7 @@ which results will be plotted. Default = c(1, 2).}
 
 \item{bar_col}{color of histogram bars, default = "gray65".}
 
-\item{cl_col}{color of confidence limit line, default = "darkgreen".}
+\item{cl_col}{color of confidence limit line, default = "black".}
 
 \item{observed_col}{color of line representing observed value of overlap,
 default = "blue".}

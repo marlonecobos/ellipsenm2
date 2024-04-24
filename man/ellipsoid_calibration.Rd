@@ -9,7 +9,7 @@ ellipsoid_calibration(data, species, longitude, latitude, variables,
                       selection_criteria = "S_OR_P", error = 5,
                       iterations = 500, percentage = 50,
                       parallel = FALSE, overwrite = FALSE,
-                      output_directory = "calibration_results")
+                      output_directory)
 }
 \arguments{
 \item{data}{(character or list) if character, vector of names of csv files
@@ -56,7 +56,7 @@ bootstrapped process for calculating the partial ROC. Default = 50.}
 defined as TRUE, it will only run in parallel if the number of parameter
 settings to be tested is equal or larger than the number of cores available.}
 
-\item{overwrite}{(logical) whether or not to overwrite exitent results in
+\item{overwrite}{(logical) whether or not to overwrite existing results in
 \code{output_directory}. Default = FALSE.}
 
 \item{output_directory}{(character) name of the folder were results of model
@@ -116,5 +116,5 @@ calib <- ellipsoid_calibration(data = data_split, species = "species",
                                variables = variable_sets, methods = methods,
                                level = 99, selection_criteria = "S_OR_P",
                                error = 5, iterations = 500, percentage = 50,
-                               output_directory = "calibration_results")
+                               output_directory = file.path(tempdir(), "calres"))
 }

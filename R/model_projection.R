@@ -1,15 +1,15 @@
 #' Helper function to project models to distinct scenarios
 #'
 #' @param ellipsoid a fitted object of class ellipsoid*.
-#' @param projection_variables (RasterStack, list, or character): if RasterStack,
-#' a stack of layers respresenting an only scenario for projection; if list, a
-#' named list of RasterStacks representing multiple scenarios for projection; if
+#' @param projection_variables (SpatRaster, list, or character): if SpatRaster,
+#' a stack of layers representing an only scenario for projection; if list, a
+#' named list of SpatRasters representing multiple scenarios for projection; if
 #' character, name of the folder (in the working directory) containing other
 #' folders (scenarios for projection) with raster layers to be used as variables.
 #' See details of \code{\link{ellipsoid_model}}.
 #' @param prvariables_format (character) if \code{projection_variables} is a list,
 #' raster type of variables (raster layers) to be used and located in
-#' subdirectories. Default = NULL. See \code{\link[raster]{writeFormats}} for
+#' sub-directories. Default = NULL. See \code{\link[raster]{writeFormats}} for
 #' details and options.
 #' @param sp_name (character) name of the species for which model(s) will be
 #' projected. If not defined "species" is used.
@@ -18,16 +18,16 @@
 #' @param truncate (logical) whether or not to truncate values of suitability
 #' based on ellipsoid limits. All values outside the ellipsoid will be zero.
 #' Default = TRUE.
-#' @param return_numeric (logical) whether or not to return values of mahalanobis
+#' @param return_numeric (logical) whether or not to return values of Mahalanobis
 #' distance and suitability as part of the results (it depends on the type of
-#' \code{prediction} selected). If \code{projection_variables} is a RasterStack,
+#' \code{prediction} selected). If \code{projection_variables} is a SpatRaster,
 #' default = FALSE; if \code{projection_variables} is a matrix, default = TRUE.
 #' For both options the default can be changed. See details.
 #' @param tolerance the tolerance for detecting linear dependencies.
 #' Default = 1e-60.
-#' @param format (charater) raster type of layers to be written.
+#' @param format (character) raster type of layers to be written.
 #' See \code{\link[raster]{writeFormats}} for details and options.
-#' @param overwrite (logical) whether or not to overwrite an exitent file with
+#' @param overwrite (logical) whether or not to overwrite an exiting file with
 #' the exact same name. Default = FALSE.
 #' @param force_return (logical) whether or not to force returning numeric and
 #' raster results for one of the ellipsoids defined by name in \code{return_name}.
@@ -39,9 +39,9 @@
 #'
 #' @return
 #' A list with an example of each of the following: raster layers of suitability
-#' or mahalanobis distances, depending on the type of \code{prediction} selected;
-#' and the prevalence in environemnetal and geographic space for all projection
-#' scenarios, if \code{prediction} was other than mahalanobis.
+#' or Mahalanobis distances, depending on the type of \code{prediction} selected;
+#' and the prevalence in environmental and geographic space for all projection
+#' scenarios, if \code{prediction} was other than "mahalanobis".
 #'
 #' Additionally all results of projections will be written in the folder defined
 #' in \code{output_directory}.
@@ -51,7 +51,7 @@
 #'                  sp_name, prediction = "suitability", truncate = TRUE,
 #'                  return_numeric = TRUE, tolerance = 1e-60, format = "GTiff",
 #'                  overwrite = FALSE, force_return = FALSE, return_name = NULL,
-#'                  output_directory = "ellipsenm_projections")
+#'                  output_directory)
 #'
 #' @export
 
@@ -59,7 +59,7 @@ model_projection <- function(ellipsoid, projection_variables, prvariables_format
                              sp_name, prediction = "suitability", truncate = TRUE,
                              return_numeric = TRUE, tolerance = 1e-60, format = "GTiff",
                              overwrite = FALSE, force_return = FALSE, return_name = NULL,
-                             output_directory = "ellipsenm_projections") {
+                             output_directory) {
   # -----------
   # detecting potential errors
   if (!missing(ellipsoid)) {
@@ -80,11 +80,14 @@ model_projection <- function(ellipsoid, projection_variables, prvariables_format
     sp_name <- "species"
     warning("\nsp_name not defined, species will be used as generic sp_name.\n")
   }
+  if (missing(output_directory)) {
+    stop("Argument 'output_directory' needs to be defined.")
+  }
 
   # -----------
   # producing projections
   cclas <- class(projection_variables)[1]
-  if (cclas == "character" | cclas == "RasterStack" | cclas == "list") {
+  if (cclas == "character" | cclas == "SpatRaster" | cclas == "list") {
     # preparing data
     if (cls %in% c("ellipsoid", "ellipsoid_model_sim")) {
       ellv_names <- names(ellipsoid@centroid)
@@ -93,8 +96,8 @@ model_projection <- function(ellipsoid, projection_variables, prvariables_format
     }
     #nam_format <- rformat_type(format)
 
-    if (cclas == "RasterStack") {
-      r_values <- na.omit(raster::values(projection_variables))
+    if (cclas == "SpatRaster") {
+      r_values <- terra::as.data.frame(projection_variables)
       lnames <- "projection"
       if (all(ellv_names == names(projection_variables))) {
         namer <- paste0(output_directory, "/", lnames, "_", sp_name)#, nam_format)
@@ -122,9 +125,11 @@ model_projection <- function(ellipsoid, projection_variables, prvariables_format
       predictions <- list()
 
       for (i in 1:length(lnames)) {
-        cat("   Projection to", lnames[i], "\n")
+        message("   Projection to ", lnames[i])
         if (all(ellv_names == names(projection_variables[[i]]))) {
-          if (i == 1) {r_values <- na.omit(raster::values(projection_variables[[i]]))}
+          if (i == 1) {
+            r_values <- terra::as.data.frame(projection_variables[[i]])
+          }
           namer <- paste0(output_directory, "/", lnames[i], "_", sp_name)#, nam_format)
 
           if (cls == "ellipsoid_model_rep") {
@@ -150,13 +155,15 @@ model_projection <- function(ellipsoid, projection_variables, prvariables_format
 
       predictions <- list()
       for (i in 1:length(dirs)) {
-        cat("   Projection to", lnames[i], "\n")
+        message("   Projection to ", lnames[i])
         namest <- gsub(format_pl, "", list.files(dirs[i], pattern = format_pl))
 
         if (all(ellv_names == namest)) {
-          p_layers <- raster::stack(list.files(dirs[i], pattern = format_pl,
-                                               full.names = TRUE))
-          if (i == 1) {r_values <- na.omit(raster::values(p_layers))}
+          p_layers <- terra::rast(list.files(dirs[i], pattern = format_pl,
+                                             full.names = TRUE))
+          if (i == 1) {
+            r_values <- terra::as.data.frame(p_layers)
+          }
 
           namer <- paste0(output_directory, "/", lnames[i], "_", sp_name)#, nam_format)
 
@@ -181,8 +188,8 @@ model_projection <- function(ellipsoid, projection_variables, prvariables_format
 
   # -----------
   # returning metadata for projection scenarios and returning results
-  cat("\nWriting prevalence for projection scenario(s):\n")
-  if (cclas == "RasterStack") {
+  message("Writing prevalence for projection scenario(s):")
+  if (cclas == "SpatRaster") {
     if (prediction != "mahalanobis") {
       suit <- predictions@prediction_suit
       prevalence <- predictions@prevalence
@@ -194,7 +201,7 @@ model_projection <- function(ellipsoid, projection_variables, prvariables_format
       }
       write.csv(prevalence, paste0(output_directory, "/projection_prevalence.csv"),
                 row.names = TRUE)
-      cat("\tPrevalence in projection scenario\n")
+      message("\tPrevalence in projection scenario")
     } else {
       maha <- predictions@prediction_maha
     }
@@ -212,7 +219,7 @@ model_projection <- function(ellipsoid, projection_variables, prvariables_format
         prevs <- data.frame(ellipsoid_model = predictions[[x]]@prevalence)
         write.csv(prevs, paste0(output_directory, "/", lnames[x],"_prevalence.csv"),
                   row.names = TRUE)
-        cat("\tPrevalence in scenario", lnames[x],"\n")
+        message("\tPrevalence in scenario ", lnames[x])
       })
     } else {
       maha <- predictions[[1]]@prediction_maha

@@ -5,7 +5,7 @@
 \title{Overlap of ellipsoid-based ecological niche models}
 \usage{
 ellipsoid_overlap(..., overlap_type = "all", n_points = 1000000,
-                  significance_test = FALSE, replicates = 1000,
+                  significance_test = FALSE, iterations = 1000,
                   confidence_limit = 0.05)
 }
 \arguments{
@@ -24,7 +24,7 @@ Default = 1000000.}
 \item{significance_test}{(logical) whether or not to perform a test to determine
 statistical significance of overlap results. See details; default = FALSE.}
 
-\item{replicates}{(numeric) number of replicates to be performed during the
+\item{iterations}{(numeric) number of iterations to be performed during the
 significance test; default = 1000.}
 
 \item{confidence_limit}{(numeric) confidence limit for the significance test.
@@ -45,17 +45,17 @@ Types of overlap are as follows:
 \itemize{
 \item "all", performs all types of overlap analyses allowed.
 \item "full", measures overlap of the complete volume of the ellipsoidal niches.
-\item "back_union", meausures overlap of ellipsoidal niches considering only the
+\item "back_union", measures overlap of ellipsoidal niches considering only the
 union of the environmental conditions relevant for the two species (backgrounds).
 }
 
 The statistical significance test consist in randomly sampling the background
-with n = to the number of records of each species and creting ellipsoids with
+with n = to the number of records of each species and creating ellipsoids with
 such data. Overlap is measured for each pair of random-ellipsoids according to
 the \code{overlap_type} selected. The process is repeated \code{replicate}
 times and the observed overlap value is compared to the values found for
 pairs of random-ellipsoids. The null hypothesis is that the niches are
-overlaped and if the observed values are as exterme or more extreme than the
+overlapped and if the observed values are as extreme or more extreme than the
 lower limit of the values found for the random-ellipsoids, the null hypothesis
 is rejected. This is, if the observed overlap value is lower than the 95\%
 (or the value defined in \code{confidence_limit}) of the random-derived values
@@ -72,17 +72,17 @@ occurrences <- read.csv(system.file("extdata", "occurrences.csv",
                                     package = "ellipsenm"))
 
 # raster layers of environmental data
-vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
+vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
                                  pattern = "bio", full.names = TRUE))
 
 # preparing data
-vext <- raster::extent(vars)
-ext1 <- raster::extent(vext[1], (mean(vext[1:2]) + 0.2), vext[3:4])
-ext2 <- raster::extent((mean(vext[1:2]) + 0.2), vext[2], vext[3:4])
+vext <- terra::ext(vars)
+ext1 <- terra::ext(vext[1], (mean(vext[1:2]) + 0.2), vext[3:4])
+ext2 <- terra::ext((mean(vext[1:2]) + 0.2), vext[2], vext[3:4])
 
 # croping variables and splitting occurrences
-vars1 <- raster::stack(raster::crop(vars, ext1))
-vars2 <- raster::stack(raster::crop(vars, ext2))
+vars1 <- terra::crop(vars, ext1)
+vars2 <- terra::crop(vars, ext2)
 
 occurrences1 <- occurrences[occurrences$longitude < (mean(vext[1:2]) + 0.2), ]
 occurrences2 <- occurrences[!occurrences$longitude \%in\% occurrences1$longitude, ]

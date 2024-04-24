@@ -20,7 +20,7 @@ the species ecological niche. Available methods are: "covmat", "mve1", and
 \item{level}{(numeric) the confidence level of a pairwise confidence region
 for the ellipsoid, expresed as percentage. Default = 95.}
 
-\item{variables}{(optional) RasterStack, matrix, or data.frame of at least two
+\item{variables}{(optional) SpatRaster, matrix, or data.frame of at least two
 variables to represent a set of conditions relevant for overlap analyses.}
 }
 \value{

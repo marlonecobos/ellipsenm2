@@ -7,7 +7,7 @@
 #' ellipsoid* objects.
 #'
 #' @param object a fitted object of class ellipsoid*.
-#' @param projection_variables RasterStack or matrix of variables representing
+#' @param projection_variables SpatRaster or matrix of variables representing
 #' environmental conditions of the scenario to which \code{object} will be
 #' projected. See details.
 #' @param prediction (character) type of prediction to be made, options are:
@@ -17,7 +17,7 @@
 #' Default = TRUE.
 #' @param return_numeric (logical) whether or not to return values of mahalanobis
 #' distance and suitability as part of the results (it depends on the type of
-#' \code{prediction} selected). If \code{projection_variables} is a RasterStack,
+#' \code{prediction} selected). If \code{projection_variables} is a SpatRaster,
 #' default = FALSE, but can be changed to TRUE; if \code{projection_variables} is
 #' a matrix, default = TRUE and cannot be changed. See details.
 #' @param tolerance the tolerance for detecting linear dependencies.
@@ -52,12 +52,12 @@
 #' Argument \code{object} must be of one of the following classes: "ellipsoid"
 #' or "ellipsoid_model_sim". The prefix "suitability" or "mahalanobis" will be
 #' added to \code{name} depending on the type of prediction defined in
-#' \code{prediction}. File type (extention) will be added to \code{name}, if
+#' \code{prediction}. File type (extension) will be added to \code{name}, if
 #' defined, .csv for numeric results and any of the ones described in
 #' \code{\link[raster]{writeFormats}} depending on \code{format}.
 #'
 #' Argument \code{projection_variables} variables can be defined either as a
-#' RasterStack or as a matrix. If a matrix is given each column represents a
+#' SpatRaster or as a matrix. If a matrix is given each column represents a
 #' variable and predictions are returned only as numeric vectors. In both cases,
 #' variable names must match exactly the order and name of variables used to
 #' create \code{object}.
@@ -68,7 +68,7 @@
 #' return, if not defined, the results for the first ellipsoid will return.
 #'
 #' The only scenarios in which none of the numeric results will be returned are:
-#' if \code{projection_variables} is a RasterStack and \code{return numeric} is
+#' if \code{projection_variables} is a SpatRaster and \code{return numeric} is
 #' set as FALSE, and if \code{name} is defined and \code{force_return} is set as
 #' FALSE, even if \code{return numeric} = TRUE for ellipsoid_model_sim. However,
 #' for the latter case, if \code{force_return} is set as TRUE, raster and numeric
@@ -82,7 +82,7 @@
 #'                                     package = "ellipsenm"))
 #'
 #' # raster layers of environmental data
-#' vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
+#' vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
 #'                                  pattern = "bio", full.names = TRUE))
 #'
 #'
@@ -106,7 +106,7 @@
 #' # example with replicated ellipsoid
 #' # getting values of variables in data
 #' occurrences1 <- cbind(occurrences[, 2:3],
-#'                       raster::extract(vars, occurrences[, 2:3]))
+#'                       terra::extract(vars, occurrences[, 2:3])[, -1])
 #'
 #' # subsampling data for construction of multiple ellipsoids
 #' subsamples <- data_subsample(data = occurrences1, replicates = 10,
@@ -152,15 +152,15 @@ setMethod("predict", signature(object = "ellipsoid"),
                 stop("Argument 'format' needs to be defined if argument name is given.")
               }
             }
-            if (!class(projection_variables)[1] %in% c("RasterStack", "RasterBrick", "matrix", "data.frame")) {
-              stop("Argument 'projection_variables' needs to be either a RasterStack or a matrix.")
+            if (!class(projection_variables)[1] %in% c("SpatRaster", "RasterBrick", "matrix", "data.frame")) {
+              stop("Argument 'projection_variables' needs to be either a SpatRaster or a matrix.")
             } else {
               if (class(projection_variables)[1] == "RasterBrick") {
-                projection_variables <- raster::stack(projection_variables)
+                projection_variables <- terra::rast(projection_variables)
               }
             }
             if (!is.null(name)) {
-              if (class(projection_variables)[1] != "RasterStack") {
+              if (class(projection_variables)[1] != "SpatRaster") {
                 message("Argument 'projection_variables' is a matrix, no raster predictions will be returned.")
               }
             } else {
@@ -183,9 +183,9 @@ setMethod("predict", signature(object = "ellipsoid"),
             level <- object@level
 
             # raster data
-            if (class(projection_variables)[1] == "RasterStack") {
+            if (class(projection_variables)[1] == "SpatRaster") {
               return_numeric <- ifelse(missing(return_numeric), FALSE, return_numeric)
-              back <- na.omit(raster::values(projection_variables))
+              back <- terra::as.data.frame(projection_variables)
             } else {
               return_numeric <- TRUE
               back <- as.matrix(projection_variables)
@@ -195,12 +195,17 @@ setMethod("predict", signature(object = "ellipsoid"),
             # -----------
             # analyses and preparation of results
             ## Mahalanobis distance
-            maha <- mahalanobis(x = back, center = centroid, cov = covariance_matrix,
+            maha <- mahalanobis(x = back, center = centroid,
+                                cov = covariance_matrix,
                                 tol = tolerance)
 
             # -----------
             # conditioned results
             if (prediction == "suitability" | prediction == "mahalanobis" | prediction == "both") {
+              if (class(projection_variables)[1] == "SpatRaster") {
+                nona <- !is.na(projection_variables[[1]][])
+              }
+
               if (prediction != "mahalanobis") {
                 ## a point is inside the confidence region (1-alpha=confidence%) if the distance
                 ## divided by the quantile of a Chi-square variable with k d.f. is less than 1
@@ -216,15 +221,18 @@ setMethod("predict", signature(object = "ellipsoid"),
                 u_suit <- suitability[db]
                 p_suit_e <- sum(u_suit != 0) / length(u_suit)
 
-                prevalence <- c(prevalence_E_space = p_suit_e, prevalence_G_space = p_suit_g)
+                prevalence <- c(prevalence_E_space = p_suit_e,
+                                prevalence_G_space = p_suit_g)
 
                 ## redefining suitability by trucate option
-                if (truncate == FALSE) {suitability <- suitab}
+                if (truncate == FALSE) {
+                  suitability <- suitab
+                }
 
                 ## preparing RasterLayers suit
-                if (class(projection_variables)[1] == "RasterStack") {
+                if (class(projection_variables)[1] == "SpatRaster") {
                   suit_layer <- projection_variables[[1]]
-                  suit_layer[!is.na(suit_layer[])] <- suitability
+                  suit_layer[nona] <- suitability
                   names(suit_layer) <- "suitability"
                 } else {
                   suit_layer <- vector()
@@ -232,9 +240,9 @@ setMethod("predict", signature(object = "ellipsoid"),
 
                 if (prediction == "both") {
                   ## preparing RasterLayers maha
-                  if (class(projection_variables)[1] == "RasterStack") {
+                  if (class(projection_variables)[1] == "SpatRaster") {
                     maha_layer <- projection_variables[[1]]
-                    maha_layer[!is.na(maha_layer[])] <- maha
+                    maha_layer[nona] <- maha
                     names(maha_layer) <- "mahalanobis"
                   } else {
                     maha_layer <- vector()
@@ -294,9 +302,9 @@ setMethod("predict", signature(object = "ellipsoid"),
 
               } else {
                 ## preparing RasterLayers maha
-                if (class(projection_variables)[1] == "RasterStack") {
+                if (class(projection_variables)[1] == "SpatRaster") {
                   maha_layer <- projection_variables[[1]]
-                  maha_layer[!is.na(maha_layer[])] <- maha
+                  maha_layer[nona] <- maha
                   names(maha_layer) <- "mahalanobis"
                 } else {
                   maha_layer <- vector()
@@ -359,15 +367,15 @@ setMethod("predict", signature(object = "ellipsoid"),
                 }
               }
 
-              if (class(projection_variables)[1] == "RasterStack") {
+              if (class(projection_variables)[1] == "SpatRaster") {
                 if (prediction != "mahalanobis") {
                   if (prediction == "both") {
                     ## writing raster layers
                     mname <- paste0(ndir, "mahalanobis_", name, ras_format)
                     sname <- paste0(ndir, "suitability_", name, ras_format)
-                    raster::writeRaster(maha_layer, filename = mname, format = format,
+                    terra::writeRaster(maha_layer, filename = mname,
                                         overwrite = overwrite)
-                    raster::writeRaster(suit_layer, filename = sname, format = format,
+                    terra::writeRaster(suit_layer, filename = sname,
                                         overwrite = overwrite)
 
                     ## erasing slots
@@ -377,7 +385,7 @@ setMethod("predict", signature(object = "ellipsoid"),
                     }
                   } else {
                     sname <- paste0(ndir, "suitability_", name, ras_format)
-                    raster::writeRaster(suit_layer, filename = sname, format = format,
+                    terra::writeRaster(suit_layer, filename = sname,
                                         overwrite = overwrite)
 
                     if (force_return == FALSE) {
@@ -386,7 +394,7 @@ setMethod("predict", signature(object = "ellipsoid"),
                   }
                 } else {
                   mname <- paste0(ndir, "mahalanobis_", name, ras_format)
-                  raster::writeRaster(maha_layer, filename = mname, format = format,
+                  terra::writeRaster(maha_layer, filename = mname,
                                       overwrite = overwrite)
 
                   if (force_return == FALSE) {
@@ -429,21 +437,21 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
                 stop("Argument 'format' needs to be defined if argument name is given.")
               }
             }
-            if (!class(projection_variables)[1] %in% c("RasterStack", "RasterBrick", "matrix", "data.frame")) {
-              stop("Argument 'projection_variables' needs to be either a RasterStack or a matrix.")
+            if (!class(projection_variables)[1] %in% c("SpatRaster", "RasterBrick", "matrix", "data.frame")) {
+              stop("Argument 'projection_variables' needs to be either a SpatRaster or a matrix.")
             } else {
               if (class(projection_variables)[1] == "RasterBrick") {
-                projection_variables <- raster::stack(projection_variables)
+                projection_variables <- terra::rast(projection_variables)
               }
-              if (class(projection_variables)[1] == "RasterStack" & missing(return_numeric)) {
+              if (class(projection_variables)[1] == "SpatRaster" & missing(return_numeric)) {
                 return_numeric <- FALSE
               }
-              if (class(projection_variables)[1] != "RasterStack" & missing(return_numeric)){
+              if (class(projection_variables)[1] != "SpatRaster" & missing(return_numeric)){
                 return_numeric <- TRUE
               }
             }
             if (!is.null(name)) {
-              if (class(projection_variables)[1] != "RasterStack") {
+              if (class(projection_variables)[1] != "SpatRaster") {
                 message("\nArgument 'projection_variables' is a matrix, no raster predictions will be returned.\n")
               }
             } else {
@@ -482,19 +490,19 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
 
             ## preparing variants
             if (return_numeric == FALSE & is.null(name) & is.null(return_name) &
-                class(projection_variables)[1] != "RasterStack") {
+                class(projection_variables)[1] != "SpatRaster") {
               return_name <- nam_ell[1]
             }
             if (return_numeric == FALSE & is.null(name) & is.null(return_name) &
-                class(projection_variables)[1] == "RasterStack") {
+                class(projection_variables)[1] == "SpatRaster") {
               return_name <- "ipmoisbsel392"
             }
             if (return_numeric == FALSE & !is.null(name) & is.null(return_name) &
-                class(projection_variables)[1] == "RasterStack") {
+                class(projection_variables)[1] == "SpatRaster") {
               return_name <- "ipmoisbsel392"
             }
             if (return_numeric == TRUE & !is.null(name) & is.null(return_name) &
-                class(projection_variables)[1] == "RasterStack") {
+                class(projection_variables)[1] == "SpatRaster") {
               return_name <- "ipmoisbsel392"
             }
 
@@ -505,8 +513,8 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
             n_ell <- ncol(centroid)
 
             # raster data
-            if (class(projection_variables)[1] == "RasterStack") {
-              back <- na.omit(raster::values(projection_variables))
+            if (class(projection_variables)[1] == "SpatRaster") {
+              back <- terra::as.data.frame(projection_variables)
             } else {
               back <- as.matrix(projection_variables)
             }
@@ -516,7 +524,11 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
             # analyses and preparation of results
             ## layers to be filled
             if (prediction == "suitability" | prediction == "mahalanobis" | prediction == "both") {
-              if (class(projection_variables)[1] == "RasterStack") {
+              if (class(projection_variables)[1] == "SpatRaster") {
+                nona <- !is.na(projection_variables[[1]][])
+              }
+
+              if (class(projection_variables)[1] == "SpatRaster") {
                 if (prediction != "mahalanobis") {
                   suit_layer <- projection_variables[[1]]
                   if (prediction == "both") {
@@ -537,12 +549,12 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
               chi_sq <- qchisq(alpha, ncol(back))
 
               maha_suit <- lapply(1:n_ell, function(x) {
-                cat("\tPrediction", x, "of", n_ell, "\n")
+                message("\tPrediction ", x, " of ", n_ell)
                 mah <-  mahalanobis(x = back, center = centroid[, x],
                                     cov = covariance_matrix[[x]], tol = tolerance)
                 if (prediction == "both") {
-                  if (class(projection_variables)[1] == "RasterStack") {
-                    maha_layer[!is.na(maha_layer[])] <- mah
+                  if (class(projection_variables)[1] == "SpatRaster") {
+                    maha_layer[nona] <- mah
                   } else {
                     maha_layer <- vector()
                   }
@@ -551,8 +563,8 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
                 suitab <- exp(-0.5 * mah)
                 suitability <- ifelse(mah / chi_sq[x] <= 1, suitab, 0)
 
-                if (class(projection_variables)[1] == "RasterStack") {
-                  suit_layer[!is.na(suit_layer[])] <- suitability
+                if (class(projection_variables)[1] == "SpatRaster") {
+                  suit_layer[nona] <- suitability
                 } else {
                   suit_layer <- vector()
                 }
@@ -578,17 +590,17 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
                     suppressMessages(data.table::fwrite(data.frame(suitability = suitability),
                                                         file = snamec))
                   }
-                  if (class(projection_variables)[1] == "RasterStack") {
+                  if (class(projection_variables)[1] == "SpatRaster") {
                     if (prediction == "both") {
                       mname <- paste0(ndir, enames[x], "_mahalanobis_", name, ras_format)
                       sname <- paste0(ndir, enames[x], "_suitability_", name, ras_format)
-                      raster::writeRaster(maha_layer, filename = mname, format = format,
+                      terra::writeRaster(maha_layer, filename = mname,
                                           overwrite = overwrite)
-                      raster::writeRaster(suit_layer, filename = sname, format = format,
+                      terra::writeRaster(suit_layer, filename = sname,
                                           overwrite = overwrite)
                     } else {
                       sname <- paste0(ndir, enames[x], "_suitability_", name, ras_format)
-                      raster::writeRaster(suit_layer, filename = sname, format = format,
+                      terra::writeRaster(suit_layer, filename = sname,
                                           overwrite = overwrite)
                     }
                   }
@@ -662,9 +674,10 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
                   }
                 }
 
-                if (class(projection_variables)[1] == "RasterStack") {
-                  suit_layers <- do.call(raster::stack,
-                                         unname(lapply(maha_suit, function(x) {x[["s_layer"]]})))
+                if (class(projection_variables)[1] == "SpatRaster") {
+                  suit_layers <- terra::rast(unname(lapply(maha_suit, function(x) {
+                    x[["s_layer"]]
+                  })))
                   names(suit_layers) <- nam_ell
                 } else {
                   suit_layers <- vector()
@@ -676,7 +689,7 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
                     colnames(suitability) <- return_name
                   }
                   suit_layers <- maha_suit[[return_name]][["s_layer"]]
-                  if (class(projection_variables)[1] == "RasterStack") {
+                  if (class(projection_variables)[1] == "SpatRaster") {
                     names(suit_layers) <- return_name
                   }
                 } else {
@@ -697,9 +710,10 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
                     }
                   }
 
-                  if (class(projection_variables)[1] == "RasterStack") {
-                    maha_layers <- do.call(raster::stack,
-                                           unname(lapply(maha_suit, function(x) {x[["m_layer"]]})))
+                  if (class(projection_variables)[1] == "SpatRaster") {
+                    maha_layers <- terra::rast(unname(lapply(maha_suit, function(x) {
+                      x[["m_layer"]]
+                    })))
                     names(maha_layers) <- nam_ell
                   } else {
                     maha_layers <- vector()
@@ -711,7 +725,7 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
                       colnames(maha) <- return_name
                     }
                     maha_layers <- maha_suit[[return_name]][["m_layer"]]
-                    if (class(projection_variables)[1] == "RasterStack") {
+                    if (class(projection_variables)[1] == "SpatRaster") {
                       names(maha_layers) <- return_name
                     }
                   } else {
@@ -737,12 +751,12 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
 
             } else {
               maha <- lapply(1:n_ell, function(x) {
-                cat("\tPrediction", x, "of", n_ell, "\n")
+                message("\tPrediction ", x, " of ", n_ell)
                 mah <-  mahalanobis(x = back, center = centroid[, x],
                                     cov = covariance_matrix[[x]], tol = tolerance)
 
-                if (class(projection_variables)[1] == "RasterStack") {
-                  maha_layer[!is.na(maha_layer[])] <- mah
+                if (class(projection_variables)[1] == "SpatRaster") {
+                  maha_layer[nona] <- mah
                 } else {
                   maha_layer <- vector()
                 }
@@ -752,9 +766,9 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
                   suppressMessages(data.table::fwrite(data.frame(mahalanobis = mah),
                                                       file = mnamec))
 
-                  if (class(projection_variables)[1] == "RasterStack") {
+                  if (class(projection_variables)[1] == "SpatRaster") {
                     mname <- paste0(ndir, enames[x], "_mahalanobis_", name, ras_format)
-                    raster::writeRaster(maha_layer, filename = mname, format = format,
+                    terra::writeRaster(maha_layer, filename = mname,
                                         overwrite = overwrite)
                   }
 
@@ -786,9 +800,10 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
               names(maha) <- nam_ell
 
               if (is.null(name)) {
-                if (class(projection_variables)[1] == "RasterStack") {
-                  maha_layers <- do.call(raster::stack,
-                                         unname(lapply(maha, function(x) {x[["m_layer"]]})))
+                if (class(projection_variables)[1] == "SpatRaster") {
+                  maha_layers <- terra::rast(unname(lapply(maha, function(x) {
+                    x[["m_layer"]]
+                  })))
                   names(maha_layers) <- nam_ell
                 } else {
                   maha_layers <- vector()
@@ -806,7 +821,7 @@ setMethod("predict", signature(object = "ellipsoid_model_rep"),
               } else {
                 if (force_return == TRUE) {
                   maha_layers <- maha[[return_name]][["m_layer"]]
-                  if (class(projection_variables)[1] == "RasterStack") {
+                  if (class(projection_variables)[1] == "SpatRaster") {
                     names(maha_layers) <- return_name
                   }
                   maha <- data.frame(maha[[return_name]][["maha"]])

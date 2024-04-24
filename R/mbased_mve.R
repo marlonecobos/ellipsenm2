@@ -28,10 +28,10 @@
 #'                                     package = "ellipsenm"))
 #'
 #' # raster layers of environmental data
-#' vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
-#'                                  pattern = "bio", full.names = TRUE))
+#' vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
+#'                                pattern = "bio", full.names = TRUE))
 #'
-#' data <- raster::extract(vars, occurrences[, -1])
+#' data <- terra::extract(vars, occurrences[, -1])[, -1]
 #'
 #' mvellipsoid <- mbased_mve(data)
 

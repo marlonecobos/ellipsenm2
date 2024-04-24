@@ -18,7 +18,7 @@ ellipsoids of a list of ellipsoid objects.
 Minimum and maximum ellipsoids are calculated based on the volumes of all
 elements in \code{ellipsoid_list}.
 
-The mean ellipsoid is calculated by finsing the mean of all centroids and all
+The mean ellipsoid is calculated by finding the mean of all centroids and all
 covariance matrices of all elements in \code{ellipsoid_list}.
 }
 \examples{
@@ -27,15 +27,16 @@ occurrences <- read.csv(system.file("extdata", "occurrences.csv",
                                     package = "ellipsenm"))
 
 # raster layers of environmental data
-vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
-                                 pattern = "bio", full.names = TRUE))
+vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
+                               pattern = "bio", full.names = TRUE))
 
 # getting values of variables in data
-occurrences1 <- cbind(occurrences[, 2:3], raster::extract(vars, occurrences[, 2:3]))
+occurrences1 <- cbind(occurrences[, 2:3],
+                      terra::extract(vars, occurrences[, 2:3])[, -1])
 
 # subsampling data for construction of multiple ellipsoids
 subsamples <- data_subsample(data = occurrences1, replicates = 10,
-                             replicate_type = "bootstrap")
+                             replicate_type = "subsample")
 
 # fitting ellipsoids for the 10 subsamples
 ellipsoids <- lapply(subsamples, function (x) {
