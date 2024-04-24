@@ -258,9 +258,9 @@ select_best <- function(calibration_table, selection_criteria = "S_OR_P",
                                  min(calibration_table[, 4]), ]
       warning("None of the parameter settings resulted in significant models.\n  The ones with the lowest partial ROC values were selected.\n")
     }
-    res <- sig[sig[, 6] <= ((100 - level) / 100), ]
+    res <- sig[sig[, 5] <= ((100 - level) / 100), ]
     if (nrow(res) == 0) {
-      res <- sig[sig[, 6] == min(sig[, 6]), ]
+      res <- sig[sig[, 5] == min(sig[, 5]), ]
       warning("None of the models had omission rates lower or equal than expected.\n  The ones with the lowest omission rates were selected.\n")
     }
     if (selection_criteria == "S_OR_P") {
