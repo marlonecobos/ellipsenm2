@@ -26,9 +26,8 @@ are useful to perform a series of pre- and post-modeling analyses.
 \section{Other functions (important helpers)}{
 
 \code{\link{data_subsample}}, \code{\link{ellipsoid_volume}},
-\code{\link{report_format}}, \code{\link{mbased_mve}},
+\code{\link{mbased_mve}}, \code{\link{select_best}},
 \code{\link{mmm_ellipsoid}}, \code{\link{model_projection}},
-\code{\link{select_best}},
 \code{\link{hypercube_boundaries}}, \code{\link{overlap_metrics}}
 }
 
@@ -48,8 +47,6 @@ Authors:
   \item Luis Osorio-Olvera \email{luismurao@gmail.com }
   \item Jorge Soberon \email{jsoberon@ku.edu}
   \item A. Townsend Peterson \email{town@ku.edu}
-  \item Vijay Barve \email{vijay.barve@gmail.com}
-  \item Narayani Barve \email{narayani.ku@gmail.com}
 }
 
 }

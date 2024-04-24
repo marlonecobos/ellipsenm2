@@ -15,9 +15,8 @@
 #'
 #' @section Other functions (important helpers):
 #' \code{\link{data_subsample}}, \code{\link{ellipsoid_volume}},
-#' \code{\link{report_format}}, \code{\link{mbased_mve}},
+#' \code{\link{mbased_mve}}, \code{\link{select_best}},
 #' \code{\link{mmm_ellipsoid}}, \code{\link{model_projection}},
-#' \code{\link{select_best}},
 #' \code{\link{hypercube_boundaries}}, \code{\link{overlap_metrics}}
 #'
 "_PACKAGE"
