@@ -4,10 +4,10 @@
 #' and testing data using blocks.
 #'
 #' @param data matrix or data.frame with the occurrences to be split. Columns
-#' may vary but species, longitude, and latitue are recommended.
+#' may vary but species, longitude, and latitude are recommended.
 #' @param longitude (character) name of the column with longitude data.
 #' @param latitude (character) name of the column with latitude data.
-#' @param raster_layer optional RasterLayer to prepare background data.
+#' @param raster_layer optional SpatRaster to prepare background data.
 #' @param background_n (numeric) optional number of coordinates to be extracted
 #' using the \code{raster_layer}. Default = 10000.
 #' @param train_proportion (numeric) proportion of data to be used as training
@@ -56,7 +56,7 @@ occ_blocksplit <- function(data, longitude, latitude, train_proportion = 0.75,
   # -----------
   # background split
   if (!is.null(raster_layer)) {
-    back <- as.data.frame(sp::coordinates(raster_layer)[!is.na(raster_layer[]), ])
+    back <- as.data.frame(terra::crds(raster_layer))
 
     if (nrow(back) > background_n) {
       back <- back[sample(nrow(back), background_n), ]

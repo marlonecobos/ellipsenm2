@@ -79,7 +79,8 @@ setMethod("summary", signature(object = "ellipsoid"),
                 print(summary(object@prediction_suit))
               }
               if (length(object@prevalence) > 0) {
-                cat("\n\nPrevalence:\t", object@prevalence)
+                cat("\n\nPrevalence:\n")
+                print(object@prevalence)
               }
               #if (nrow(object@mahalanobis_proj) > 0) {
               #  cat("\n\nMahalanobis projection quantiles:")

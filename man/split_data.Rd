@@ -85,8 +85,8 @@ lapply(data_split2, head)
 lapply(data_split2, dim)
 
 # split data using blocks and preparing background
-r_layer <- raster::raster(system.file("extdata", "bio_1.tif",
-                                      package = "ellipsenm"))
+r_layer <- terra::rast(system.file("extdata", "bio_1.tif",
+                                   package = "ellipsenm"))
 
 data_split3 <- split_data(occurrences, method = "block", longitude = "longitude",
                           latitude = "latitude", train_proportion = 0.75,

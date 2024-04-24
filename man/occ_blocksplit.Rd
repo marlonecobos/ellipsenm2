@@ -15,7 +15,7 @@ occ_blocksplit(
 }
 \arguments{
 \item{data}{matrix or data.frame with the occurrences to be split. Columns
-may vary but species, longitude, and latitue are recommended.}
+may vary but species, longitude, and latitude are recommended.}
 
 \item{longitude}{(character) name of the column with longitude data.}
 
@@ -25,7 +25,7 @@ may vary but species, longitude, and latitue are recommended.}
 occurrences. Available options are 0.25, 0.5, and 0.75. The remaining data
 will be used for testing. Default = 0.75.}
 
-\item{raster_layer}{optional RasterLayer to prepare background data.}
+\item{raster_layer}{optional SpatRaster to prepare background data.}
 
 \item{background_n}{(numeric) optional number of coordinates to be extracted
 using the \code{raster_layer}. Default = 10000.}

@@ -4,7 +4,7 @@
 \name{ellipsenm-package}
 \alias{ellipsenm}
 \alias{ellipsenm-package}
-\title{ellipsenm: An R package for ecological niche's characterization using ellipsoids}
+\title{ellipsenm: Ecological Niche Characterizations Using Ellipsoids}
 \description{
 A collection of tools to characterize ecological niches using ellipsoid envelopes. Functions to perform model calibration and selection, prepare model projections to distinct scenarios, assess niche overlap, and produce virtual ecological niches are included as part of this package. Other functions implemented here are useful to perform a series of common pre- and post-modeling analyses. In contrast to other tools for ecological niche and species distribution modeling, this package is the first in presenting a comprehensive set of tools that use ellipsoid envelopes as the theoretical representation of ecological niches. Details on the theoretical background and methods used here can be found in: Peterson et al. (1999) \doi{10.1126/science.285.5431.1265}, Soberon and Peterson (2005) \doi{10.17161/bi.v2i0.4}, Peterson (2011) \doi{10.1111/j.1365-2699.2010.02456.x}, Peterson et al. (2011) \url{https://bit.ly/2UpQ9Hd}
 }

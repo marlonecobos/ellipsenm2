@@ -31,6 +31,16 @@
 #' @slot projections_suit if ellipsoid_model_sim, object of class Raster*, if
 #' ellipsoid_model_rep, list of Raster* objects.
 #' @export
+#' @importFrom terra rast extract as.data.frame crds writeRaster
+#' @importFrom stats cov na.omit qchisq
+#' @importFrom enmpa proc_enm
+#' @importFrom MASS cov.mve
+#' @importFrom grDevices terrain.colors
+#' @importFrom rgl plot3d ellipse3d wire3d legend3d
+#' @importFrom ellipse ellipse
+#' @importFrom data.table fwrite
+#' @importFrom utils combn
+#'
 #' @examples
 #' showClass("ellipsoid")
 #' #' showClass("ellipsoid_model_rep")

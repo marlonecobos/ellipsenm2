@@ -4,10 +4,10 @@
 \alias{plot_overlap}
 \title{Plot results of niche overlap analyses}
 \usage{
-plot_overlap(object, niches = c(1, 2), niche_col = c("blue", "red"),
-             data = TRUE, data_col = c("blue", "red"),
+plot_overlap(object, niches = c(1, 2), niche_col = c("blue", "gray"),
+             data = TRUE, data_col = c("blue", "gray"),
              background = FALSE, background_type, proportion = 0.3,
-             background_col = viridis::viridis, change_labels = FALSE,
+             background_col = grDevices::terrain.colors, change_labels = FALSE,
              xlab = "", ylab = "", zlab = "", legend = TRUE)
 }
 \arguments{
@@ -18,13 +18,13 @@ plot_overlap(object, niches = c(1, 2), niche_col = c("blue", "red"),
 plotted. Default = c(1, 2).}
 
 \item{niche_col}{colors to be used to plot ellipsoids of niches to be
-compared. Default = c("blue", "red").}
+compared. Default = c("blue", "gray").}
 
 \item{data}{(logical) whether or not to plot points of species data. Default
 = TRUE.}
 
 \item{data_col}{colors to be used to plot data points of niches to be
-compared. Default = c("blue", "red").}
+compared. Default = c("blue", "gray").}
 
 \item{background}{(logical) whether or not to plot background points. Default
 = TRUE.}
@@ -35,7 +35,7 @@ are: "full", "back_union". See \code{\link{ellipsoid_overlap}}.}
 \item{proportion}{(numeric) proportion of background to be plotted. Default = 0.3.}
 
 \item{background_col}{color ramp to be used for coloring background points.
-Default = viridis::viridis.}
+Default = grDevices::terrain.colors.}
 
 \item{change_labels}{(logical) whether or not to change axes label.
 Default = FALSE.}
@@ -62,20 +62,20 @@ occurrences <- read.csv(system.file("extdata", "occurrences.csv",
                                     package = "ellipsenm"))
 
 # raster layers of environmental data
-vars <- raster::stack(list.files(system.file("extdata", package = "ellipsenm"),
+vars <- terra::rast(list.files(system.file("extdata", package = "ellipsenm"),
                                  pattern = "bio", full.names = TRUE))
 
 # preparing data
-vext <- raster::extent(vars)
-ext1 <- raster::extent(vext[1], (mean(vext[1:2]) + 0.2), vext[3:4])
-ext2 <- raster::extent((mean(vext[1:2]) + 0.2), vext[2], vext[3:4])
+vext <- terra::ext(vars)
+ext1 <- terra::ext(vext[1], (mean(vext[1:2]) + 0.2), vext[3:4])
+ext2 <- terra::ext((mean(vext[1:2]) + 0.2), vext[2], vext[3:4])
 
 # croping variables and splitting occurrences
-vars1 <- raster::stack(raster::crop(vars, ext1))
-vars2 <- raster::stack(raster::crop(vars, ext2))
+vars1 <- terra::crop(vars, ext1)
+vars2 <- terra::crop(vars, ext2)
 
-occurrences1 <- occurrences[occurrences$longitude < (mean(vext[1:2]) + 0.2),]
-occurrences2 <- occurrences[!occurrences$longitude \%in\% occurrences1$longitude,]
+occurrences1 <- occurrences[occurrences$longitude < (mean(vext[1:2]) + 0.2), ]
+occurrences2 <- occurrences[!occurrences$longitude \%in\% occurrences1$longitude, ]
 
 # preparing overlap objects to perform analyses
 niche1 <- overlap_object(occurrences1, species =  "species", longitude = "longitude",
@@ -93,9 +93,9 @@ overlap <- ellipsoid_overlap(niche1, niche2)
 # plotting only ellipsoids
 plot_overlap(overlap)
 
-# plotting ellispodis and background for full overlap
+# plotting ellispods and background for full overlap
 plot_overlap(overlap, background = TRUE, proportion = 0.6, background_type = "full")
 
-# plotting ellispodis and background for overlap based on accessible environments
+# plotting ellispods and background for overlap based on accessible environments
 plot_overlap(overlap, background = TRUE,  proportion = 1, background_type = "back_union")
 }

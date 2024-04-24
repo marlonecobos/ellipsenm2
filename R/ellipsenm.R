@@ -1,4 +1,4 @@
-#' ellipsenm: An R package for ecological niche's characterization using ellipsoids
+#' ellipsenm: Ecological Niche Characterizations Using Ellipsoids
 #'
 #' @details
 #' ellipsenm implements multiple tools to help users in using ellipsoids to model
